@@ -9,6 +9,7 @@ import org.openimaj.image.processing.resize.ResizeProcessor;
 
 import java.awt.*;
 import java.util.*;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import static org.openimaj.image.ImageUtilities.FIMAGE_READER;
@@ -43,6 +44,18 @@ public class App {
         return image;
     }
 
+    private static DoubleFV normaliseVector(double[] vector) {
+        double mean = DoubleStream.of(vector).average().getAsDouble();
+        double length = Math.sqrt(DoubleStream.of(vector)
+                .map(i -> Math.pow(i, 2))
+                .sum());
+
+        vector = DoubleStream.of(vector)
+                .map(i -> (i / mean) / length)
+                .toArray();
+        return new DoubleFV(vector);
+    }
+
     private static void run1() {
         try {
 
@@ -61,13 +74,13 @@ public class App {
 
                 for (int i = 0; i < images.size(); i++) {
                     FImage resized = cropAndResize(images.getInstance(i));
-                    trainingFeatures.add(new HashMap.SimpleEntry<>(entry.getKey(), new DoubleFV(resized.getDoublePixelVector())));
+                    trainingFeatures.add(new HashMap.SimpleEntry<>(entry.getKey(), normaliseVector(resized.getDoublePixelVector())));
                 }
             }
 
             for (int i = 0; i < testing.size(); i++) {
                 FImage resized = cropAndResize(testing.getInstance(i));
-                testingFeatures.add(new HashMap.SimpleEntry<>(testing.getID(i), new DoubleFV(resized.getDoublePixelVector())));
+                testingFeatures.add(new HashMap.SimpleEntry<>(testing.getID(i), normaliseVector(resized.getDoublePixelVector())));
             }
 
             // Train KNN
