@@ -7,20 +7,20 @@ import org.openimaj.image.FImage;
 import org.openimaj.image.processing.resize.ResizeProcessor;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public class KNN {
     private VFSGroupDataset<FImage> training;
     private VFSListDataset<FImage> testing;
+    private int k;
 
-    public KNN(VFSGroupDataset<FImage> training, VFSListDataset<FImage> testing) {
+    public KNN(VFSGroupDataset<FImage> training, VFSListDataset<FImage> testing, int k) {
         this.training = training;
         this.testing = testing;
+        this.k = k;
     }
 
     private static double euclideanDistance(double[] instance1, double[] instance2) {
@@ -63,6 +63,18 @@ public class KNN {
         return new DoubleFV(vector);
     }
 
+    private static String getVote(ArrayList<Map.Entry<String, Double>> distances, int k) {
+        distances.sort(Comparator.comparing(Map.Entry::getValue));
+        Map<String, Integer> votes = new HashMap<>();
+        for (Map.Entry<String, Double> neighbour : distances.subList(0, k))
+            votes.put(neighbour.getKey(),
+                    (votes.containsKey(neighbour.getKey())) ? votes.get(neighbour.getKey()) + 1 : 1);
+
+        List<Map.Entry<String,Integer>> votesList = new LinkedList<>(votes.entrySet());
+        Collections.sort(votesList, Comparator.comparing(Map.Entry::getValue));
+        return votesList.get(0).getKey();
+    }
+
     public Map<String, String> train() {
         Map<String, String> classifications = new HashMap<>();
 
@@ -92,8 +104,8 @@ public class KNN {
             for (Map.Entry<String, DoubleFV> trainFV : trainingFeatures)
                 distances.add(new HashMap.SimpleEntry<>(trainFV.getKey(), euclideanDistance(testVec.asDoubleVector(), trainFV.getValue().asDoubleVector())));
 
-            distances.sort(Comparator.comparing(Map.Entry::getValue));
-            String prediction = distances.get(0).getKey();
+            String prediction = getVote(distances, k);
+
             classifications.put(testId, prediction);
         }
         return classifications;
