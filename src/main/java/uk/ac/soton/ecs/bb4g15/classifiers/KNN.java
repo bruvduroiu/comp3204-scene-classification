@@ -6,20 +6,19 @@ import org.openimaj.feature.DoubleFV;
 import org.openimaj.image.FImage;
 import org.openimaj.image.processing.resize.ResizeProcessor;
 
+import uk.ac.soton.ecs.bb4g15.App;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-public class KNN {
-    private VFSGroupDataset<FImage> training;
-    private VFSListDataset<FImage> testing;
+public class KNN extends Classifier {
     private int k;
 
     public KNN(VFSGroupDataset<FImage> training, VFSListDataset<FImage> testing, int k) {
-        this.training = training;
-        this.testing = testing;
+    	super(training, testing);
         this.k = k;
     }
 
@@ -51,18 +50,6 @@ public class KNN {
         return image;
     }
 
-    private static DoubleFV normaliseVector(double[] vector) {
-        double mean = DoubleStream.of(vector).average().getAsDouble();
-        double length = Math.sqrt(DoubleStream.of(vector)
-                .map(i -> Math.pow(i, 2))
-                .sum());
-
-        vector = DoubleStream.of(vector)
-                .map(i -> (i / mean) / length)
-                .toArray();
-        return new DoubleFV(vector);
-    }
-
     private static String getVote(ArrayList<Map.Entry<String, Double>> distances, int k) {
         distances.sort(Comparator.comparing(Map.Entry::getValue));
         Map<String, Integer> votes = new HashMap<>();
@@ -75,27 +62,27 @@ public class KNN {
         return votesList.get(0).getKey();
     }
 
-    public Map<String, String> train() {
-        Map<String, String> classifications = new HashMap<>();
-
+    public Map<String, String> _train(Map<String, String> classifications) {
         ArrayList<Map.Entry<String, DoubleFV>> trainingFeatures = new ArrayList<>();
         ArrayList<Map.Entry<String, DoubleFV>> testingFeatures = new ArrayList<>();
 
+        App.log("Calculating training features");
         for (Map.Entry<String, VFSListDataset<FImage>> entry : training.entrySet()) {
             VFSListDataset<FImage> images = entry.getValue();
 
             for (int i = 0; i < images.size(); i++) {
                 FImage resized = cropAndResize(images.getInstance(i));
-                trainingFeatures.add(new HashMap.SimpleEntry<>(entry.getKey(), normaliseVector(resized.getDoublePixelVector())));
+                trainingFeatures.add(new HashMap.SimpleEntry<>(entry.getKey(), centerAndNormaliseVector(resized.getDoublePixelVector())));
             }
         }
 
+        App.log("Calculating testing features");
         for (int i = 0; i < testing.size(); i++) {
             FImage resized = cropAndResize(testing.getInstance(i));
-            testingFeatures.add(new HashMap.SimpleEntry<>(testing.getID(i), normaliseVector(resized.getDoublePixelVector())));
+            testingFeatures.add(new HashMap.SimpleEntry<>(testing.getID(i), centerAndNormaliseVector(resized.getDoublePixelVector())));
         }
 
-        // Train KNN
+        App.log("Testing KNN");
         for (Map.Entry<String, DoubleFV> testVectEntry : testingFeatures) {
             ArrayList<Map.Entry<String, Double>> distances = new ArrayList<>();
             String testId = testVectEntry.getKey();
