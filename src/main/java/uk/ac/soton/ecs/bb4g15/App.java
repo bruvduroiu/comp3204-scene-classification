@@ -15,7 +15,7 @@ public class App {
 	public static void main( String[] args ) {
 		try {
 			Classifier classifier;
-			classifier = new KNN(Dataset.loadTraining(), Dataset.loadTesting(), 3);
+			//classifier = new KNN(Dataset.loadTraining(), Dataset.loadTesting(), 3);
 			classifier = new Linear(Dataset.loadTraining(), Dataset.loadTesting(), 8, 4, 500);
 
 			Map<String, String> results = classifier.train();

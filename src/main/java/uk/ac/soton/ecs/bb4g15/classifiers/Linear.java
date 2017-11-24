@@ -50,7 +50,7 @@ public class Linear extends Classifier {
 		App.log("Testing annotator");
 		for (int i = 0; i < testing.size(); i++) {
 			String prediction = (String) ann.classify(testing.get(i)).getPredictedClasses().toArray()[0];
-			classifications.put(testing.getID(), prediction);
+			classifications.put(testing.getID(i), prediction);
 		}
 		return classifications;
 	}
