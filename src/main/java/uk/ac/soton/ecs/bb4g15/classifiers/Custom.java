@@ -42,7 +42,7 @@ public class Custom extends Classifier {
 
 	@Override
 	protected Map<String, String> _train(Map<String, String> classifications) {
-		int nEpochs = 5000; // Number of training epochs
+		int nEpochs = 100; // Number of training epochs
 
 		MultiLayerNetwork model = new MultiLayerNetwork(getNetConfig());
 		model.init();
@@ -54,22 +54,27 @@ public class Custom extends Classifier {
 		}
 
 		DataSet test;
+		int i = 0;
+		List<String> predictions;
 		while (testIterator.hasNext()) {
 			test = testIterator.next();
-			classifications.put("", model.predict(test).get(0));
+			predictions = model.predict(test);
+			for (int x = 0; x < test.numExamples(); x ++, i ++) {
+				classifications.put(testing.getID(i), predictions.get(x));
+			}
 		}
 
 		return classifications;
 	}
-
+	
 	public MultiLayerConfiguration getNetConfig() {
 		int nChannels = 1; // Number of input channels
 		int outputNum = 15; // The number of possible outcomes
 
 		Map<Integer, Double> lrSchedule = new HashMap<>();
 		lrSchedule.put(0, 0.01);
-		lrSchedule.put(1000, 0.005);
-		lrSchedule.put(3000, 0.001);
+		lrSchedule.put(300, 0.005);
+		lrSchedule.put(600, 0.001);
 
 		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
 				.iterations(1)
@@ -86,7 +91,6 @@ public class Custom extends Classifier {
 				.updater(new Nesterovs(0.75))
 				.list()
 				.layer(0, new ConvolutionLayer.Builder(5, 5)
-						//nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
 						.nIn(nChannels)
 						.stride(1, 1)
 						.nOut(20)
@@ -111,7 +115,7 @@ public class Custom extends Classifier {
 						.nOut(outputNum)
 						.activation(Activation.SOFTMAX)
 						.build())
-				.setInputType(InputType.convolutionalFlat(28,28,1))
+				.setInputType(InputType.convolutionalFlat(DLDataSetIterator.IMAGE_DIMENSION, DLDataSetIterator.IMAGE_DIMENSION, 1))
 				.backprop(true).pretrain(false).build();
 		return conf;
 	}

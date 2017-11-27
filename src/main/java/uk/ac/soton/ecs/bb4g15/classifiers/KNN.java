@@ -30,22 +30,8 @@ public class KNN extends Classifier {
     }
 
     private static FImage cropAndResize(FImage image) {
-        int cropDimensions = Math.min(image.getWidth(), image.getHeight());
-        Point center = new Point(image.getWidth()/2, image.getHeight()/2);
-
-        float[][] crop = new float[cropDimensions][cropDimensions];
-
-        int xStart = (center.x - cropDimensions/2);
-        int yStart = (center.y - cropDimensions/2);
-
-        for (int y = yStart; y < (center.y + cropDimensions/2); y++) {
-            for (int x = xStart; x < (center.x + cropDimensions/2); x++) {
-                int cropX = x - xStart;
-                int cropY = y - yStart;
-                crop[cropY][cropX] = image.pixels[y][x];
-            }
-        }
-        image = image.internalAssign(new FImage(crop));
+    	int cropDimensions = Math.min(image.getWidth(), image.getHeight());
+    	image = crop(image, cropDimensions, cropDimensions);
         image = image.processInplace(new ResizeProcessor(16, 16));
         return image;
     }

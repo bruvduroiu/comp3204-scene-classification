@@ -37,11 +37,13 @@ public class App {
 		if (LOG) { System.out.println(output); }
 	}
 	
-	public static void outputPredictions(int runNum, Map<String, String> results) throws Exception{
+	public static void outputPredictions(int runNum, Map<String, String> results) throws Exception {
+		App.log("Outputting predictions for run #" + runNum);
 		File f = new File("run" + runNum + ".txt");
 		BufferedWriter bw = new BufferedWriter(new FileWriter(f));
 		for(Map.Entry<String, String> classification : results.entrySet()) {
 			bw.write(classification.getKey() + " " + classification.getValue());
+			bw.newLine();
 		}
 		bw.close();
 	}
