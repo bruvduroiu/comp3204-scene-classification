@@ -19,10 +19,10 @@ public class App {
 	public static void main( String[] args ) {
 		try {
 			Classifier classifier;
-			classifier = new KNN(Dataset.loadTraining(), Dataset.loadTesting(), 3);
-			outputPredictions(1, classifier.train());
-			classifier = new Linear(Dataset.loadTraining(), Dataset.loadTesting(), 8, 4, 500);
-			outputPredictions(2, classifier.train());
+			//classifier = new KNN(Dataset.loadTraining(), Dataset.loadTesting(), 3);
+			//outputPredictions(1, classifier.train());
+			//classifier = new Linear(Dataset.loadTraining(), Dataset.loadTesting(), 8, 4, 500);
+			//outputPredictions(2, classifier.train());
 			classifier = new Custom(Dataset.loadTraining(), Dataset.loadTesting());
 			outputPredictions(3, classifier.train());
 

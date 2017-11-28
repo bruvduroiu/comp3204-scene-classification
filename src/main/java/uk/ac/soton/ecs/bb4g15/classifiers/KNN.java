@@ -1,5 +1,14 @@
 package uk.ac.soton.ecs.bb4g15.classifiers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
 import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.feature.DoubleFV;
@@ -7,12 +16,7 @@ import org.openimaj.image.FImage;
 import org.openimaj.image.processing.resize.ResizeProcessor;
 
 import uk.ac.soton.ecs.bb4g15.App;
-
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
+import uk.ac.soton.ecs.bb4g15.utils.MListDataset;
 
 public class KNN extends Classifier {
     private int k;
@@ -29,6 +33,7 @@ public class KNN extends Classifier {
                         .sum());
     }
 
+    //Crops the image to a square and resizes it to 16x16
     private static FImage cropAndResize(FImage image) {
     	int cropDimensions = Math.min(image.getWidth(), image.getHeight());
     	image = crop(image, cropDimensions, cropDimensions);
@@ -36,6 +41,7 @@ public class KNN extends Classifier {
         return image;
     }
 
+    //Gets the class with the shortest distance
     private static String getVote(ArrayList<Map.Entry<String, Double>> distances, int k) {
         distances.sort(Comparator.comparing(Map.Entry::getValue));
         Map<String, Integer> votes = new HashMap<>();
@@ -48,16 +54,18 @@ public class KNN extends Classifier {
         return votesList.get(0).getKey();
     }
 
+    //Trains the model
     public Map<String, String> _train(Map<String, String> classifications) {
         ArrayList<Map.Entry<String, DoubleFV>> trainingFeatures = new ArrayList<>();
         ArrayList<Map.Entry<String, DoubleFV>> testingFeatures = new ArrayList<>();
 
         App.log("Calculating training features");
-        for (Map.Entry<String, VFSListDataset<FImage>> entry : training.entrySet()) {
-            VFSListDataset<FImage> images = entry.getValue();
+        for (Map.Entry<String, MListDataset<FImage>> entry : training.entrySet()) {
+            MListDataset<FImage> images = entry.getValue();
 
             for (int i = 0; i < images.size(); i++) {
                 FImage resized = cropAndResize(images.getInstance(i));
+                //adds the centered, normalised vector of the reduced image
                 trainingFeatures.add(new HashMap.SimpleEntry<>(entry.getKey(), centerAndNormaliseVector(resized.getDoublePixelVector())));
             }
         }
@@ -74,6 +82,7 @@ public class KNN extends Classifier {
             String testId = testVectEntry.getKey();
             DoubleFV testVec = testVectEntry.getValue();
 
+            //finds the distance from the test vector to the other vectors
             for (Map.Entry<String, DoubleFV> trainFV : trainingFeatures)
                 distances.add(new HashMap.SimpleEntry<>(trainFV.getKey(), euclideanDistance(testVec.asDoubleVector(), trainFV.getValue().asDoubleVector())));
 

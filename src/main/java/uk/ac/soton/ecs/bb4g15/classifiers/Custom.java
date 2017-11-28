@@ -29,20 +29,17 @@ import uk.ac.soton.ecs.bb4g15.utils.DLDataSetIterator;
 
 public class Custom extends Classifier {
 
-	public DLDataSetIterator trainIterator;
-	public DLDataSetIterator testIterator;
 	public static final int batchSize = 64; // Test batch size
-
-
 	public Custom(VFSGroupDataset<FImage> training, VFSListDataset<FImage> testing) throws Exception {
 		super(training, testing);
-		this.trainIterator = new DLDataSetIterator(batchSize, training);
-		this.testIterator = new DLDataSetIterator(batchSize, testing);
 	}
 
 	@Override
 	protected Map<String, String> _train(Map<String, String> classifications) {
-		int nEpochs = 100; // Number of training epochs
+		DLDataSetIterator trainIterator = new DLDataSetIterator(batchSize, training);
+		DLDataSetIterator testIterator = new DLDataSetIterator(batchSize, testing);
+
+		int nEpochs = 25; // Number of training epochs
 
 		MultiLayerNetwork model = new MultiLayerNetwork(getNetConfig());
 		model.init();

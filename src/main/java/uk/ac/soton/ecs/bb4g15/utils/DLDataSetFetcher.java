@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.deeplearning4j.datasets.fetchers.BaseDataFetcher;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.openimaj.data.dataset.GroupedDataset;
 import org.openimaj.data.dataset.VFSGroupDataset;
 import org.openimaj.data.dataset.VFSListDataset;
 import org.openimaj.image.FImage;
@@ -24,7 +24,7 @@ public class DLDataSetFetcher extends BaseDataFetcher {
 	public ArrayList<Entry<Integer, FImage>> images;
 	public boolean train;
 
-	public DLDataSetFetcher(VFSGroupDataset<FImage> training) {
+	public DLDataSetFetcher(GroupedDataset<String, MListDataset<FImage>, FImage> training) {
 		images = new ArrayList<Entry<Integer, FImage>>();
 		for (String group : training.getGroups()) {
 			for (int i = 0; i < training.getInstances(group).size(); i ++) {
@@ -35,7 +35,7 @@ public class DLDataSetFetcher extends BaseDataFetcher {
 		setup();
 	}
 
-	public DLDataSetFetcher(VFSListDataset<FImage> testing) {
+	public DLDataSetFetcher(MListDataset<FImage> testing) {
 		images = new ArrayList<Entry<Integer, FImage>>();
 		for (int i = 0; i < testing.size(); i ++) {
 			images.add(new AbstractMap.SimpleEntry<Integer, FImage>(0, testing.get(i)));
